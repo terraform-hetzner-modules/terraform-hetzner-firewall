@@ -13,8 +13,8 @@ resource "hcloud_firewall" "current" {
       protocol        = rule.value["protocol"]
       port            = rule.value["port"]
       description     = rule.value["description"]
-      source_ips      = try(rule.value["source_ips"], null)
-      destination_ips = try(rule.value["destination_ips"], null)
+      source_ips      = rule.value.source_ips
+      destination_ips = rule.value.destination_ips
     }
   }
 

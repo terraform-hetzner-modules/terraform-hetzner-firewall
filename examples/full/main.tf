@@ -1,40 +1,31 @@
+resource "hcloud_server" "example" {
+  name        = "firewall-example"
+  image       = "debian-13"
+  server_type = "cx23"
+  location    = "fsn1"
+  labels      = { environment = "example" }
+}
 module "firewall_example" {
-  source = "../../modules/firewall"
-
-  name   = "smtn"
-  labels = {}
-
+  source = "../.."
+  name   = "example-firewall"
+  labels = { environment = "example" }
   rules = {
-    http = {
-      direction = "in"
-      protocol  = "tcp"
-      port      = "80"
-      source_ips = [
-        "0.0.0.0/0",
-        "::/0"
-      ]
-      description = "Allow inbound unencrypted http traffic."
+    ssh = {
+      direction   = "in"
+      protocol    = "tcp"
+      port        = "22"
+      source_ips  = ["0.0.0.0/0", "::/0"]
+      description = "Replace with your administrator CIDRs."
     }
-
-    https = {
-      direction = "in"
-      protocol  = "tcp"
-      port      = "443"
-      source_ips = [
-        "0.0.0.0/0",
-        "::/0"
-      ]
-      description = "Allow inbound encrypted http traffic."
+    web_out = {
+      direction       = "out"
+      protocol        = "tcp"
+      port            = "443"
+      destination_ips = ["0.0.0.0/0", "::/0"]
     }
   }
-
   apply = {
-    server1 = {
-      server_id = "1"
-    }
-
-    label_selector = {
-      environment = "prod"
-    }
+    server   = { server_id = hcloud_server.example.id }
+    selector = { label_selector = "environment=example" }
   }
 }
