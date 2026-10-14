@@ -1,3 +1,9 @@
+## [2.1.0](https://github.com/terraform-hetzner-modules/terraform-hetzner-firewall/compare/v2.0.0...v2.1.0) (2026-10-14)
+
+### Features
+
+* **module:** add optional firewall attachment management ([8b4c3f1](https://github.com/terraform-hetzner-modules/terraform-hetzner-firewall/commit/8b4c3f1260c18767f55244d0883c8770d5e4fd69))
+
 ## [2.0.0](https://github.com/terraform-hetzner-modules/terraform-hetzner-firewall/compare/v1.0.0...v2.0.0) (2026-10-14)
 
 ### ⚠ BREAKING CHANGES
