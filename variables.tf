@@ -41,11 +41,31 @@ variable "apply" {
     server_id      = optional(number)
     label_selector = optional(string)
   }))
-  description = "Named attachment targets, each with exactly one server_id or label_selector."
+  description = "Inline attachment targets, each with exactly one server_id or label_selector. Mutually exclusive with an enabled separate attachment."
   default     = {}
   nullable    = false
   validation {
     condition     = alltrue([for target in var.apply : (target.server_id != null) != (target.label_selector != null)])
     error_message = "Each target must specify exactly one of server_id and label_selector."
   }
+}
+
+variable "attach" {
+  type        = bool
+  description = "Whether to create the single separate attachment resource. Null enables it when server_ids or label_selectors are non-empty. Set true explicitly when IDs are unknown until apply."
+  default     = null
+}
+
+variable "server_ids" {
+  type        = set(number)
+  description = "Server IDs managed by the separate attachment resource. Leave apply empty when using this interface."
+  default     = []
+  nullable    = false
+}
+
+variable "label_selectors" {
+  type        = set(string)
+  description = "Label selectors managed by the separate attachment resource. Leave apply empty when using this interface."
+  default     = []
+  nullable    = false
 }

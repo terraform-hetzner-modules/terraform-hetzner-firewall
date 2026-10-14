@@ -37,6 +37,19 @@ mappings, and remaining coverage review items.
 Run `terraform init -backend=false`, `terraform validate`, and `terraform test`
 for credential-free validation and tests.
 
+## Separate attachment management
+
+The optional `hcloud_firewall_attachment` resource manages all `server_ids` and `label_selectors`
+for this firewall in one place. Non-empty targets enable it automatically; set `attach = true`
+when server IDs are computed, or `attach = false` to disable it explicitly.
+See the [attachment example](examples/attachment). The `attachment` output contains the resource
+attributes, or null when disabled.
+
+Keep `apply = {}` when using the separate attachment. Existing inline `apply` callers remain supported;
+the module rejects enabling both ownership mechanisms. Coordinate server-side `firewall_ids` ownership
+as described in the [provider documentation](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/firewall_attachment).
+Separate attachments are applied after server creation and do not guarantee protection on first boot.
+
 <!-- BEGIN_TF_DOCS -->
 ## Providers
 
@@ -52,16 +65,21 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
-| <a name="input_apply"></a> [apply](#input\_apply) | Named attachment targets, each with exactly one server\_id or label\_selector. | ```map(object({ server_id = optional(number) label_selector = optional(string) }))``` | `{}` | no |
+| <a name="input_apply"></a> [apply](#input\_apply) | Inline attachment targets, each with exactly one server\_id or label\_selector. Mutually exclusive with an enabled separate attachment. | ```map(object({ server_id = optional(number) label_selector = optional(string) }))``` | `{}` | no |
+| <a name="input_attach"></a> [attach](#input\_attach) | Whether to create the single separate attachment resource. Null enables it when server\_ids or label\_selectors are non-empty. Set true explicitly when IDs are unknown until apply. | `bool` | `null` | no |
+| <a name="input_label_selectors"></a> [label\_selectors](#input\_label\_selectors) | Label selectors managed by the separate attachment resource. Leave apply empty when using this interface. | `set(string)` | `[]` | no |
 | <a name="input_labels"></a> [labels](#input\_labels) | Labels attached to the firewall. | `map(string)` | `{}` | no |
 | <a name="input_name"></a> [name](#input\_name) | Name of the firewall. | `string` | n/a | yes |
 | <a name="input_rules"></a> [rules](#input\_rules) | Named rules. Inbound rules use source\_ips; outbound rules use destination\_ips. Ports are required only for TCP/UDP. | ```map(object({ direction = string protocol = string port = optional(string) description = optional(string) source_ips = optional(list(string), []) destination_ips = optional(list(string), []) }))``` | `{}` | no |
+| <a name="input_server_ids"></a> [server\_ids](#input\_server\_ids) | Server IDs managed by the separate attachment resource. Leave apply empty when using this interface. | `set(number)` | `[]` | no |
 
 ## Outputs
 
 | Name | Description |
 | ---- | ----------- |
 | <a name="output_apply_to"></a> [apply\_to](#output\_apply\_to) | The 'apply\_to' configuration for the new Hetzner Cloud firewall. |
+| <a name="output_attachment"></a> [attachment](#output\_attachment) | Complete separate attachment attributes, or null when disabled. |
+| <a name="output_attachment_id"></a> [attachment\_id](#output\_attachment\_id) | ID of the separate attachment, or null when disabled. |
 | <a name="output_id"></a> [id](#output\_id) | The unique ID for the new Hetzner Cloud firewall. |
 | <a name="output_labels"></a> [labels](#output\_labels) | The labels for the new Hetzner Cloud firewall. |
 | <a name="output_name"></a> [name](#output\_name) | The name for the new Hetzner Cloud firewall. |

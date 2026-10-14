@@ -51,3 +51,19 @@ CIDRs support both IP families. Each attachment target must contain exactly one 
 
 Manage a firewall's attachments through one ownership mechanism. Avoid simultaneously managing the
 same attachment through this module, `hcloud_firewall_attachment`, and a server's `firewall_ids`.
+
+## Separate firewall attachment
+
+The optional attachment is additive: existing inline `apply` configurations keep their behavior.
+New `server_ids` and `label_selectors` inputs feed a single `hcloud_firewall_attachment.current[0]`.
+Use `attach = true` when IDs are unknown during planning. Explicit false suppresses creation; null
+infers creation from non-empty target sets. An enabled attachment must have at least one target.
+Do not combine this with inline `apply` targets or another resource managing this firewall's attachments.
+
+Moving existing inline targets to the separate resource is an ownership migration, not a resource move.
+Remove inline `apply` configuration, supply the same complete target sets, and import the existing
+attachment using the firewall ID into `module.<name>.hcloud_firewall_attachment.current[0]`.
+Review the plan for unintended detachment before applying. Test this migration in a disposable project.
+The firewall resource keeps its existing address; no automatic moved block is needed.
+
+The attachment's SDK `id` field is provider-managed rather than exposed as a creation input.

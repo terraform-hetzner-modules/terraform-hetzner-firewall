@@ -22,3 +22,13 @@ output "apply_to" {
   value       = hcloud_firewall.current.apply_to
   description = "The 'apply_to' configuration for the new Hetzner Cloud firewall."
 }
+
+output "attachment" {
+  value       = try(hcloud_firewall_attachment.current[0], null)
+  description = "Complete separate attachment attributes, or null when disabled."
+}
+
+output "attachment_id" {
+  value       = try(hcloud_firewall_attachment.current[0].id, null)
+  description = "ID of the separate attachment, or null when disabled."
+}

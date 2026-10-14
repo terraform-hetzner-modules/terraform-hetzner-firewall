@@ -16,9 +16,9 @@ Report format 1. Every field of every provider configuration, resource and data 
 
 | Measurement            | Leaves | Breakdown                                                                            |
 | ---------------------- | ------ | ------------------------------------------------------------------------------------ |
-| Inventory              | 16     | complete: 18 nodes, 16 leaves                                                        |
-| Resource inputs        | 11     | 10 direct, 0 transformed, 0 derived, 0 fixed, 1 omitted, 0 unresolved                |
-| Resource results       | 11     | 11 exported, 0 partially-exported, 0 internal, 0 unused                              |
+| Inventory              | 20     | complete: 22 nodes, 20 leaves                                                        |
+| Resource inputs        | 15     | 12 direct, 0 transformed, 1 derived, 0 fixed, 2 omitted, 0 unresolved                |
+| Resource results       | 15     | 15 exported, 0 partially-exported, 0 internal, 0 unused                              |
 | Data-source selectors  | 0      | 0 direct, 0 transformed, 0 derived, 0 fixed, 0 omitted, 0 unresolved                 |
 | Data-source results    | 0      | 0 exported, 0 partially-exported, 0 internal, 0 unused                               |
 | Provider configuration | 5      | 5 caller-owned, 0 direct, 0 transformed, 0 derived, 0 fixed, 0 omitted, 0 unresolved |
@@ -63,3 +63,15 @@ Configured by the caller. These fields are the caller's to set, not missing modu
 | `rule[].port`               | `string`      | optional          | direct: `var.rules[].port`            | conditional   | exported | automatic    | 355f38644293 |
 | `rule[].protocol`           | `string`      | required          | direct: `var.rules[].protocol`        | conditional   | exported | automatic    | 775cc37d09f9 |
 | `rule[].source_ips`         | `set(string)` | optional          | direct: `var.rules[].source_ips`      | conditional   | exported | automatic    | d052f2ff454d |
+
+### `hcloud_firewall_attachment.current`
+
+- Provider: `registry.terraform.io/hetznercloud/hcloud`
+- Instances: conditional on `var.attach`, `var.label_selectors`, `var.server_ids`
+
+| Field             | Type          | Flags             | Input                                 | Availability  | Result   | Review       | Fingerprint  |
+| ----------------- | ------------- | ----------------- | ------------------------------------- | ------------- | -------- | ------------ | ------------ |
+| `firewall_id`     | `number`      | required          | derived: `hcloud_firewall.current.id` | unconditional | exported | automatic    | 79009235b2f3 |
+| `id`              | `string`      | optional+computed | omitted                               | —             | exported | needs-review | dfd8da8b7dee |
+| `label_selectors` | `set(string)` | optional          | direct: `var.label_selectors`         | unconditional | exported | automatic    | d052f2ff454d |
+| `server_ids`      | `set(number)` | optional          | direct: `var.server_ids`              | unconditional | exported | automatic    | 7fb6b35ec0b4 |
