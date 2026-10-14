@@ -20,9 +20,19 @@ A [Terraform module][module] to create and manage firewalls for your servers wit
 ## ✨ TL;DR
 
 ```hcl
-module "hetzner_firewall_apache" {
+module "firewall" {
   source = "terraform-hetzner-modules/firewall/hetzner"
-  ...
+
+  name = "web"
+  rules = {
+    https = {
+      direction  = "in"
+      protocol   = "tcp"
+      port       = "443"
+      source_ips = ["0.0.0.0/0", "::/0"]
+    }
+  }
+  label_selectors = ["role=web"]
 }
 ```
 
