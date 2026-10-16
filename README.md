@@ -1,23 +1,11 @@
-<p align="center">
-    <!-- terraform-hetzner-firewall -->
-<img src="https://cdn.simpleicons.org/terraform/844FBA" alt="Terraform Logo" align="center" width="128">
-<img src="https://avatars.githubusercontent.com/u/30047064?s=200&v=4" alt="Hetzner Logo" align="center" width="128">
-    <h1 align="center">Hetzner Cloud</h1>
-    <h2 align="center"><code>firewall</code></h2>
-</p>
+# Hetzner Firewall Terraform module
 
-[![License](https://img.shields.io/github/license/terraform-hetzner-modules/terraform-hetzner-firewall?label=License)](https://opensource.org/licenses/MIT)
-[![Terraform](https://img.shields.io/badge/Terraform-_>=_1.7-brightgreen?logo=terraform&logoColor=623CE4)][terraform]
-[![OpenTofu](https://img.shields.io/badge/OpenTofu-_>=_1.8-brightgreen?logo=opentofu)][opentofu]
-[![CI Status](https://github.com/terraform-hetzner-modules/terraform-hetzner-firewall/actions/workflows/testing.yaml/badge.svg)](https://github.com/terraform-hetzner-modules/terraform-hetzner-firewall/blob/main/.github/workflows/testing.yaml)
-[![GitHub Release](https://img.shields.io/github/v/release/terraform-hetzner-modules/terraform-hetzner-firewall?label=Release)][github_releases]
-[![GitHub Activity](https://img.shields.io/github/commit-activity/m/terraform-hetzner-modules/terraform-hetzner-firewall?label=Commits)][github_commits]
-[![Renovate](https://img.shields.io/badge/Renovate-enabled-brightgreen?logo=renovate&logoColor=1A1F6C)][renovate]
-[![Pre-Commit](https://img.shields.io/badge/PreCommit-enabled-brightgreen?logo=precommit&logoColor=FAB040)][pre-commit]
+Manage a firewall, inbound and outbound rules, and attachments to servers or label selectors.
 
-A [Terraform module][module] to create and manage firewalls for your servers within [Hetzner Cloud][hetzner].
+## Usage
 
-## ✨ TL;DR
+Copy this configuration into `main.tf` and add the
+[provider configuration](#provider-configuration) below in `versions.tf`.
 
 ```hcl
 module "firewall" {
@@ -36,16 +24,36 @@ module "firewall" {
 }
 ```
 
-## Compatibility and examples
+This attaches the firewall to servers labeled `role=web` and permits inbound HTTPS. Add any other
+inbound rules you need before attaching it, including restricted administrative access.
 
-Requires Terraform >= 1.7 (OpenTofu >= 1.8 tested) and hcloud ~> 1.70.
-See [basic](examples/basic) and [full](examples/full) examples; configure credentials through `HCLOUD_TOKEN`.
+## Provider configuration
 
-Read the [upgrade guide](docs/UPGRADING.md) before moving from v1.
-The generated [schema report](docs/SCHEMA.md) lists provider fields, module
-mappings, and remaining coverage review items.
-Run `terraform init -backend=false`, `terraform validate`, and `terraform test`
-for credential-free validation and tests.
+Export your Hetzner API token as `HCLOUD_TOKEN`. Put the following in your calling root's `versions.tf`:
+
+```hcl
+terraform {
+  required_version = ">= 1.7"
+  required_providers {
+    hcloud = {
+      source  = "hetznercloud/hcloud"
+      version = "~> 1.70"
+    }
+  }
+}
+
+provider "hcloud" {}
+```
+
+With both files in place, run `terraform init`, `terraform plan`, and `terraform apply`.
+Credentials and provider configuration belong in the calling root.
+Terraform >= 1.7 and OpenTofu >= 1.8 are supported.
+
+## Examples
+
+- [Basic](examples/basic): a firewall with inbound rules.
+- [Full](examples/full): every input and rule field, with inline and separate attachment alternatives.
+- [Attachment](examples/attachment): a separate attachment with computed server IDs.
 
 ## Separate attachment management
 
@@ -61,79 +69,62 @@ as described in the [provider documentation](https://registry.terraform.io/provi
 Separate attachments are applied after server creation and do not guarantee protection on first boot.
 
 <!-- BEGIN_TF_DOCS -->
+## Requirements
+
+| Name | Version |
+| ---- | ------- |
+| terraform | >= 1.7 |
+| hcloud | ~> 1.70 |
+
 ## Providers
 
 | Name | Version |
 | ---- | ------- |
-| <a name="provider_hcloud"></a> [hcloud](#provider\_hcloud) | ~> 1.70 |
+| hcloud | ~> 1.70 |
 
-## Modules
+## Resources
 
-No modules.
+| Name | Type |
+| ---- | ---- |
+| [hcloud_firewall.current](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/firewall) | resource |
+| [hcloud_firewall_attachment.current](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/firewall_attachment) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
-| <a name="input_apply"></a> [apply](#input\_apply) | Inline attachment targets, each with exactly one server\_id or label\_selector. Mutually exclusive with an enabled separate attachment. | ```map(object({ server_id = optional(number) label_selector = optional(string) }))``` | `{}` | no |
-| <a name="input_attach"></a> [attach](#input\_attach) | Whether to create the single separate attachment resource. Null enables it when server\_ids or label\_selectors are non-empty. Set true explicitly when IDs are unknown until apply. | `bool` | `null` | no |
-| <a name="input_label_selectors"></a> [label\_selectors](#input\_label\_selectors) | Label selectors managed by the separate attachment resource. Leave apply empty when using this interface. | `set(string)` | `[]` | no |
-| <a name="input_labels"></a> [labels](#input\_labels) | Labels attached to the firewall. | `map(string)` | `{}` | no |
-| <a name="input_name"></a> [name](#input\_name) | Name of the firewall. | `string` | n/a | yes |
-| <a name="input_rules"></a> [rules](#input\_rules) | Named rules. Inbound rules use source\_ips; outbound rules use destination\_ips. Ports are required only for TCP/UDP. | ```map(object({ direction = string protocol = string port = optional(string) description = optional(string) source_ips = optional(list(string), []) destination_ips = optional(list(string), []) }))``` | `{}` | no |
-| <a name="input_server_ids"></a> [server\_ids](#input\_server\_ids) | Server IDs managed by the separate attachment resource. Leave apply empty when using this interface. | `set(number)` | `[]` | no |
+| apply | Inline attachment targets, each with exactly one server\_id or label\_selector. Mutually exclusive with an enabled separate attachment. | ```map(object({ server_id = optional(number) label_selector = optional(string) }))``` | `{}` | no |
+| attach | Whether to create the single separate attachment resource. Null enables it when server\_ids or label\_selectors are non-empty. Set true explicitly when IDs are unknown until apply. | `bool` | `null` | no |
+| label\_selectors | Label selectors managed by the separate attachment resource. Leave apply empty when using this interface. | `set(string)` | `[]` | no |
+| labels | Labels attached to the firewall. | `map(string)` | `{}` | no |
+| name | Name of the firewall. | `string` | n/a | yes |
+| rules | Named rules. Inbound rules use source\_ips; outbound rules use destination\_ips. Ports are required only for TCP/UDP. | ```map(object({ direction = string protocol = string port = optional(string) description = optional(string) source_ips = optional(list(string), []) destination_ips = optional(list(string), []) }))``` | `{}` | no |
+| server\_ids | Server IDs managed by the separate attachment resource. Leave apply empty when using this interface. | `set(number)` | `[]` | no |
 
 ## Outputs
 
 | Name | Description |
 | ---- | ----------- |
-| <a name="output_apply_to"></a> [apply\_to](#output\_apply\_to) | The 'apply\_to' configuration for the new Hetzner Cloud firewall. |
-| <a name="output_attachment"></a> [attachment](#output\_attachment) | Complete separate attachment attributes, or null when disabled. |
-| <a name="output_attachment_id"></a> [attachment\_id](#output\_attachment\_id) | ID of the separate attachment, or null when disabled. |
-| <a name="output_id"></a> [id](#output\_id) | The unique ID for the new Hetzner Cloud firewall. |
-| <a name="output_labels"></a> [labels](#output\_labels) | The labels for the new Hetzner Cloud firewall. |
-| <a name="output_name"></a> [name](#output\_name) | The name for the new Hetzner Cloud firewall. |
-| <a name="output_rules"></a> [rules](#output\_rules) | The rules for the new Hetzner Cloud firewall. |
+| apply\_to | The 'apply\_to' configuration for the new Hetzner Cloud firewall. |
+| attachment | Complete separate attachment attributes, or null when disabled. |
+| attachment\_id | ID of the separate attachment, or null when disabled. |
+| id | The unique ID for the new Hetzner Cloud firewall. |
+| labels | The labels for the new Hetzner Cloud firewall. |
+| name | The name for the new Hetzner Cloud firewall. |
+| rules | The rules for the new Hetzner Cloud firewall. |
 <!-- END_TF_DOCS -->
 
-### 🔃 Contributing
+## Contributing
 
-Refer to our [documentation for contributors][contributing] for contributing guidelines, commit message
-formats and versioning tips.
+See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for local checks and contribution guidelines, and
+[UPGRADING.md](docs/UPGRADING.md) for compatibility and live acceptance checks. The generated
+[schema report](docs/SCHEMA.md) documents provider coverage and intentional omissions.
 
-### 📥 Maintainers
+## Authors
 
-This project is owned and maintained by [Terraform Hetzner Modules][org]. Refer to the [`AUTHORS`][authors] or [`CODEOWNERS`][owners]
-for more information. You may also use the linked contact details to reach out directly.
+Maintained by [Terraform Hetzner Modules](https://github.com/terraform-hetzner-modules).
+See [AUTHORS](.github/AUTHORS) and [CODEOWNERS](.github/CODEOWNERS).
 
-### ©️ Copyright
+## License
 
-- _Assets provided by:_ **[HashiCorp][hashicorp]**
-- _Sources provided by:_ **[Terraform Hetzner Modules][org]** under the **[MIT License][license]**
-
-<!-- INTERNAL REFERENCES -->
-
-<!-- Project references -->
-
-<!-- File references -->
-
-[license]: LICENSE
-[contributing]: docs/CONTRIBUTING.md
-[authors]: .github/AUTHORS
-[owners]: .github/CODEOWNERS
-
-<!-- General links -->
-
-[org]: https://github.com/terraform-hetzner-modules
-[terraform]: https://terraform.io
-[opentofu]: https://opentofu.org/
-[hashicorp]: https://www.hashicorp.com/
-[hetzner]: https://hetzner.com
-[github_releases]: https://github.com/terraform-hetzner-modules/terraform-hetzner-firewall/releases
-[github_commits]: https://github.com/terraform-hetzner-modules/terraform-hetzner-firewall/commits/main/
-
-<!-- Third-party -->
-
-[module]: https://registry.terraform.io/modules/terraform-hetzner-modules/firewall/hetzner/latest
-[renovate]: https://renovatebot.com/
-[pre-commit]: https://pre-commit.com/
+MIT. See [LICENSE](LICENSE).
